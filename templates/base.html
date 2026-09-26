@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}DecentraCloud{% endblock %}</title>
+<style>
+  :root { --primary:#1f4e79; --accent:#2e8b57; --bg:#f4f6f9; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin:0; color:#222; }
+  nav { background: var(--primary); color:#fff; padding: 14px 28px; display:flex; justify-content:space-between; align-items:center; }
+  nav a { color:#fff; text-decoration:none; margin-left:18px; font-size:14px; }
+  nav .brand { font-weight:bold; font-size:18px; }
+  .container { max-width: 860px; margin: 30px auto; padding: 0 20px; }
+  .card { background:#fff; border-radius:10px; padding:26px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom:20px; }
+  h1 { color: var(--primary); font-size:22px; }
+  h2 { color: var(--primary); font-size:18px; }
+  table { width:100%; border-collapse: collapse; margin-top:10px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #e5e5e5; font-size:14px; }
+  th { background:#eef3f8; color: var(--primary); }
+  input, button { font-size:14px; padding:8px 10px; border-radius:6px; border:1px solid #ccc; }
+  button { background: var(--primary); color:#fff; border:none; cursor:pointer; }
+  button:hover { opacity:0.9; }
+  .flash { background:#fff3cd; border:1px solid #ffe69c; padding:10px 14px; border-radius:6px; margin-bottom:16px; font-size:14px; }
+  .hash { font-family: monospace; font-size:12px; word-break:break-all; color:#555; }
+  .ok { color: var(--accent); font-weight:bold; }
+  .bad { color:#c0392b; font-weight:bold; }
+  .pill { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; background:#eef3f8; color:var(--primary); margin-right:4px;}
+</style>
+</head>
+<body>
+<nav>
+  <span class="brand">🔗 DecentraCloud</span>
+  <div>
+    {% if session.user %}
+      <a href="{{ url_for('my_files') }}">My Files</a>
+      <a href="{{ url_for('upload') }}">Upload</a>
+      <a href="{{ url_for('ledger_view') }}">Blockchain Ledger</a>
+      <a href="{{ url_for('logout') }}">Logout ({{ session.user }})</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">Login</a>
+      <a href="{{ url_for('register') }}">Register</a>
+    {% endif %}
+  </div>
+</nav>
+<div class="container">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}{% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}{% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+</body>
+</html>

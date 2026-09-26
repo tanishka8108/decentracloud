@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Blockchain Ledger / Audit Trail</h1>
+  <p class="{{ 'ok' if valid else 'bad' }}">{{ msg }}</p>
+  <table>
+    <tr><th>#</th><th>Action</th><th>File</th><th>User</th><th>Hash</th><th>Prev Hash</th></tr>
+    {% for b in chain %}
+    <tr>
+      <td>{{ b.index }}</td>
+      <td>{{ b.action }}</td>
+      <td>{{ b.filename }}</td>
+      <td>{{ b.user }}</td>
+      <td class="hash">{{ b.hash[:14] }}...</td>
+      <td class="hash">{{ b.previous_hash[:14] }}...</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p style="font-size:13px;color:#555;margin-top:14px;">Every action (register / upload / share / download) is chained to the one before it. Changing any past block's data would change its hash and break this chain — that's the tamper-evidence property demonstrated here.</p>
+</div>
+{% endblock %}

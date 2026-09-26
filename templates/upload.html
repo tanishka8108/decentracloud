@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Upload a File</h1>
+  <p style="font-size:14px;color:#555;">The file will be hashed (SHA-256), replicated across 3 storage nodes, and recorded as a new block in the blockchain ledger.</p>
+  <form method="POST" enctype="multipart/form-data">
+    <p><input type="file" name="file" required></p>
+    <button type="submit">Upload</button>
+  </form>
+</div>
+{% endblock %}

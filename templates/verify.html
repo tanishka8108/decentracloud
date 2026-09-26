@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Integrity Verification — {{ filename }}</h1>
+  <p>Content address (expected SHA-256): <span class="hash">{{ file_hash }}</span></p>
+  <table>
+    <tr><th>Storage Node</th><th>Status</th></tr>
+    {% for node, status in node_status.items() %}
+    <tr><td>{{ node }}</td><td class="{{ 'ok' if status == 'OK' else 'bad' }}">{{ status }}</td></tr>
+    {% endfor %}
+  </table>
+  <h2 style="margin-top:20px;">Blockchain Ledger Integrity</h2>
+  <p class="{{ 'ok' if chain_valid else 'bad' }}">{{ msg }}</p>
+  <p style="font-size:13px;color:#555;">Tip: to demo tamper detection, open <code>nodes/node_1/&lt;hash&gt;</code> in a text editor, change a byte, save, and reload this page — that node will flip to TAMPERED while the other two still serve the correct file.</p>
+  <p><a href="{{ url_for('my_files') }}">&larr; Back to My Files</a></p>
+</div>
+{% endblock %}

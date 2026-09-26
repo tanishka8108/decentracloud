@@ -37,14 +37,20 @@ def save_file(file_bytes: bytes) -> str:
     return file_hash
 
 
-def read_file(file_hash: str):
-    """Reads the file from the first healthy node that has it — demonstrates
-    redundancy: if one node is missing/corrupted, another still serves it."""
+def read_file(file_hash):
     for node in NODES:
-        path = os.path.join(BASE_DIR, node, file_hash)
+        path = os.path.join(node, file_hash)
+
         if os.path.exists(path):
             with open(path, "rb") as f:
-                return f.read()
+                data = f.read()
+
+            # Verify integrity
+            calculated_hash = hashlib.sha256(data).hexdigest()
+
+            if calculated_hash == file_hash:
+                return data
+
     return None
 
 

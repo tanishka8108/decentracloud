@@ -1,8 +1,33 @@
 {% extends "base.html" %}
+{% block wide %} wide{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>Blockchain Ledger / Audit Trail</h1>
-  <p class="{{ 'ok' if valid else 'bad' }}">{{ msg }}</p>
+  <h1>Blockchain Ledger</h1>
+  <p class="lede">Every action — register, upload, share, download — is written as a block that hash-chains to the one before it.</p>
+  <p class="{{ 'ok' if valid else 'bad' }}" style="font-size:14px;">{{ '✓ ' if valid else '✕ ' }}{{ msg }}</p>
+
+  <div style="display:flex; overflow-x:auto; gap:0; padding: 18px 0 8px;">
+    {% for b in chain %}
+      <div style="display:flex; align-items:center; flex-shrink:0;">
+        <div style="width:210px; border:1px solid {{ '#35C9A5' if b.action == 'GENESIS' else '#2A3B5C' }}; background:#1B2740; border-radius:2px; padding:14px 16px; position:relative;">
+          <div style="position:absolute; top:-9px; left:14px; background:{{ '#16332C' if b.action=='GENESIS' else '#3A331F' if b.action=='UPLOAD' else '#1B2740' if b.action=='SHARE' else '#1B2740' }}; color:{{ '#35C9A5' if b.action=='GENESIS' else '#E3A857' if b.action=='UPLOAD' else '#8D9AB8' }}; font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 8px; border-radius:10px; border:1px solid #2A3B5C;">#{{ b.index }}</div>
+          <div style="font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px; margin-top:6px;">{{ b.action }}</div>
+          <div style="font-size:12px; color:#8D9AB8; margin-top:3px;">{{ b.filename if b.filename != '-' else '—' }}</div>
+          <div style="font-size:11.5px; color:#8D9AB8; margin-top:2px;">{{ b.user }}</div>
+          <div class="hash" style="margin-top:8px;">hash: {{ b.hash[:12] }}…</div>
+          <div class="hash">prev: {{ b.previous_hash[:12] if b.previous_hash != '0' else '0000…' }}…</div>
+        </div>
+        {% if not loop.last %}
+          <div style="width:26px; height:2px; background:#E3A857; flex-shrink:0; position:relative;">
+            <div style="position:absolute; right:-1px; top:-4px; width:0; height:0; border-top:5px solid transparent; border-bottom:5px solid transparent; border-left:7px solid #E3A857;"></div>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <hr class="divider">
+  <h2 style="font-size:15px;">Full detail</h2>
   <table>
     <tr><th>#</th><th>Action</th><th>File</th><th>User</th><th>Hash</th><th>Prev Hash</th></tr>
     {% for b in chain %}
@@ -16,6 +41,5 @@
     </tr>
     {% endfor %}
   </table>
-  <p style="font-size:13px;color:#555;margin-top:14px;">Every action (register / upload / share / download) is chained to the one before it. Changing any past block's data would change its hash and break this chain — that's the tamper-evidence property demonstrated here.</p>
 </div>
 {% endblock %}

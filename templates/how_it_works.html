@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block wide %} wide{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>How DecentraCloud Works</h1>
+  <p class="lede">A file-sharing system with no single point of trust: files are replicated across independent storage nodes, and every action is chained into a tamper-evident ledger.</p>
+
+  <h2 style="margin-top:6px;">System Architecture</h2>
+  <svg viewBox="0 0 980 300" style="width:100%; height:auto; max-height:320px;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+        <path d="M0,0 L7,3.5 L0,7 Z" fill="#8D9AB8"/>
+      </marker>
+    </defs>
+    <!-- Client -->
+    <rect x="20" y="120" width="150" height="64" rx="10" fill="#1B2740" stroke="#2A3B5C"/>
+    <text x="95" y="148" text-anchor="middle" fill="#E7ECF5" font-family="Inter, sans-serif" font-size="14" font-weight="600">Browser</text>
+    <text x="95" y="166" text-anchor="middle" fill="#8D9AB8" font-family="Inter, sans-serif" font-size="11">(You)</text>
+
+    <line x1="170" y1="152" x2="228" y2="152" stroke="#8D9AB8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Flask app -->
+    <rect x="230" y="105" width="200" height="94" rx="10" fill="#1B2740" stroke="#E3A857" stroke-width="1.4"/>
+    <text x="330" y="140" text-anchor="middle" fill="#E7ECF5" font-family="Inter, sans-serif" font-size="14" font-weight="600">Flask App Server</text>
+    <text x="330" y="160" text-anchor="middle" fill="#8D9AB8" font-family="Inter, sans-serif" font-size="11">Auth · Routing · UI</text>
+    <text x="330" y="177" text-anchor="middle" fill="#8D9AB8" font-family="Inter, sans-serif" font-size="11">Access control</text>
+
+    <line x1="430" y1="130" x2="500" y2="80" stroke="#8D9AB8" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="430" y1="175" x2="500" y2="225" stroke="#8D9AB8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Blockchain ledger -->
+    <rect x="500" y="35" width="220" height="90" rx="10" fill="#16332C" stroke="#35C9A5" stroke-width="1.4"/>
+    <text x="610" y="65" text-anchor="middle" fill="#E7ECF5" font-family="Inter, sans-serif" font-size="14" font-weight="600">Blockchain Ledger</text>
+    <text x="610" y="85" text-anchor="middle" fill="#8D9AB8" font-family="Inter, sans-serif" font-size="11">Hash-chained blocks</text>
+    <text x="610" y="101" text-anchor="middle" fill="#8D9AB8" font-family="Inter, sans-serif" font-size="11">Upload · Share · Download log</text>
+
+    <!-- Storage manager -->
+    <rect x="500" y="180" width="220" height="90" rx="10" fill="#1B2740" stroke="#2A3B5C"/>
+    <text x="610" y="210" text-anchor="middle" fill="#E7ECF5" font-family="Inter, sans-serif" font-size="14" font-weight="600">Storage Manager</text>
+    <text x="610" y="230" text-anchor="middle" fill="#8D9AB8" font-family="Inter, sans-serif" font-size="11">SHA-256 content addressing</text>
+    <text x="610" y="246" text-anchor="middle" fill="#8D9AB8" font-family="Inter, sans-serif" font-size="11">Replicates across nodes</text>
+
+    <line x1="720" y1="225" x2="790" y2="180" stroke="#8D9AB8" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="720" y1="225" x2="790" y2="225" stroke="#8D9AB8" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="720" y1="225" x2="790" y2="270" stroke="#8D9AB8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Nodes -->
+    <rect x="800" y="155" width="150" height="50" rx="8" fill="#1B2740" stroke="#2A3B5C"/>
+    <text x="875" y="185" text-anchor="middle" fill="#E7ECF5" font-family="Inter, sans-serif" font-size="12.5">Storage Node 1</text>
+    <rect x="800" y="200" width="150" height="50" rx="8" fill="#1B2740" stroke="#2A3B5C"/>
+    <text x="875" y="230" text-anchor="middle" fill="#E7ECF5" font-family="Inter, sans-serif" font-size="12.5">Storage Node 2</text>
+    <rect x="800" y="245" width="150" height="50" rx="8" fill="#1B2740" stroke="#2A3B5C"/>
+    <text x="875" y="275" text-anchor="middle" fill="#E7ECF5" font-family="Inter, sans-serif" font-size="12.5">Storage Node 3</text>
+  </svg>
+
+  <hr class="divider">
+
+  <h2>Blockchain Hash-Chaining</h2>
+  <p class="lede" style="margin-bottom:18px;">Each block stores the hash of the block before it. Changing anything in an earlier block changes its hash — which breaks every link after it, making tampering instantly detectable.</p>
+  <svg viewBox="0 0 980 170" style="width:100%; height:auto; max-height:190px;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow2" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+        <path d="M0,0 L7,3.5 L0,7 Z" fill="#E3A857"/>
+      </marker>
+    </defs>
+    {% set blocks = [("Block 0","GENESIS"),("Block 1","UPLOAD"),("Block 2","SHARE"),("Block 3","DOWNLOAD")] %}
+    {% for label, action in blocks %}
+      {% set bx = 20 + loop.index0 * 250 %}
+      <rect x="{{ bx }}" y="35" width="210" height="100" rx="8" fill="#1B2740" stroke="{{ '#E3A857' if loop.first else '#2A3B5C' }}" stroke-width="{{ '1.6' if loop.first else '1' }}"/>
+      <text x="{{ bx + 105 }}" y="62" text-anchor="middle" fill="#E7ECF5" font-family="Inter, sans-serif" font-size="13.5" font-weight="600">{{ label }}</text>
+      <text x="{{ bx + 105 }}" y="82" text-anchor="middle" fill="#35C9A5" font-family="JetBrains Mono, monospace" font-size="11">{{ action }}</text>
+      <text x="{{ bx + 105 }}" y="100" text-anchor="middle" fill="#8D9AB8" font-family="JetBrains Mono, monospace" font-size="10">hash: 4f9a2c…</text>
+      <text x="{{ bx + 105 }}" y="115" text-anchor="middle" fill="#8D9AB8" font-family="JetBrains Mono, monospace" font-size="10">prev: {{ '0000…' if loop.first else '(above)' }}</text>
+      {% if not loop.last %}
+        <line x1="{{ bx + 210 }}" y1="85" x2="{{ bx + 250 }}" y2="85" stroke="#E3A857" stroke-width="2" marker-end="url(#arrow2)"/>
+      {% endif %}
+    {% endfor %}
+  </svg>
+
+  <hr class="divider">
+
+  <h2>Course outcomes this demonstrates</h2>
+  <table>
+    <tr><th>CO</th><th>Where it shows up here</th></tr>
+    <tr><td class="pill">CO2</td><td>SaaS application layer over an IaaS/PaaS host, with hybrid deployment (local + cloud VM)</td></tr>
+    <tr><td class="pill">CO3</td><td>Storage replication and access routing across multiple nodes</td></tr>
+    <tr><td class="pill">CO5</td><td>SHA-256 integrity checks, blockchain tamper detection, login-based access control</td></tr>
+    <tr><td class="pill">CO6</td><td>Built with open-source tools, deployable on a commercial cloud (GCP/AWS/Azure)</td></tr>
+  </table>
+</div>
+{% endblock %}

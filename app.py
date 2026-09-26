@@ -43,6 +43,11 @@ def home():
     return redirect(url_for("login"))
 
 
+@app.route("/how-it-works")
+def how_it_works():
+    return render_template("how_it_works.html")
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -113,7 +118,10 @@ def share(filename):
     if not meta or meta["owner"] != session["user"]:
         flash("Not authorized to share this file.")
         return redirect(url_for("my_files"))
-    target = request.form["target_user"].strip()
+    target = request.form.get("target_user", "").strip()
+    if not target:
+        flash("No user selected to share with. Register a second account first.")
+        return redirect(url_for("my_files"))
     if target not in users:
         flash("No such user.")
         return redirect(url_for("my_files"))
@@ -143,12 +151,16 @@ def download(filename):
         flash("WARNING: integrity check failed — stored file may have been tampered with!")
 
     data = read_file(meta["hash"])
+
     if data is None:
-        flash("File missing from all storage nodes!")
+        flash("File is corrupted or unavailable.")
         return redirect(url_for("my_files"))
 
-    ledger.add_block("DOWNLOAD", filename, meta["hash"], user)
-    return send_file(io.BytesIO(data), as_attachment=True, download_name=filename)
+    return send_file(
+        io.BytesIO(data),
+        as_attachment=True,
+        download_name=filename
+    )
 
 
 @app.route("/verify/<filename>")

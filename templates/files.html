@@ -1,7 +1,9 @@
 {% extends "base.html" %}
+{% block wide %} wide{% endblock %}
 {% block content %}
 <div class="card">
   <h1>My Files</h1>
+  <p class="lede">Files you've uploaded are hashed and replicated across 3 storage nodes, and logged to the blockchain ledger.</p>
   {% if owned %}
   <table>
     <tr><th>Filename</th><th>Content Hash (address)</th><th>Shared with</th><th>Actions</th></tr>
@@ -9,21 +11,23 @@
     <tr>
       <td>{{ name }}</td>
       <td class="hash">{{ meta.hash[:20] }}...</td>
-      <td>{% for u in meta.shared_with %}<span class="pill">{{ u }}</span>{% else %}—{% endfor %}</td>
+      <td>{% for u in meta.shared_with %}<span class="pill">{{ u }}</span>{% else %}<span style="color:#8D9AB8;">—</span>{% endfor %}</td>
       <td>
-        <a href="{{ url_for('download', filename=name) }}">Download</a> |
-        <a href="{{ url_for('verify', filename=name) }}">Verify</a>
-        <form method="POST" action="{{ url_for('share', filename=name) }}" style="margin-top:6px;">
-          <select name="target_user" style="width:110px;">
-            {% for u in all_users %}{% if u != session.user %}<option value="{{ u }}">{{ u }}</option>{% endif %}{% endfor %}
-          </select>
-          <button type="submit" style="padding:4px 8px;">Share</button>
-        </form>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <a href="{{ url_for('download', filename=name) }}">Download</a>
+          <a href="{{ url_for('verify', filename=name) }}">Verify</a>
+          <form method="POST" action="{{ url_for('share', filename=name) }}" style="display:flex; gap:6px;">
+            <select name="target_user" style="width:120px; padding:6px 8px;">
+              {% for u in all_users %}{% if u != session.user %}<option value="{{ u }}">{{ u }}</option>{% endif %}{% endfor %}
+            </select>
+            <button type="submit" style="padding:6px 12px; font-size:12.5px;">Share</button>
+          </form>
+        </div>
       </td>
     </tr>
     {% endfor %}
   </table>
-  {% else %}<p>You haven't uploaded any files yet. <a href="{{ url_for('upload') }}">Upload one</a>.</p>{% endif %}
+  {% else %}<p style="color:#8D9AB8;">You haven't uploaded any files yet. <a href="{{ url_for('upload') }}">Upload one →</a></p>{% endif %}
 </div>
 
 <div class="card">
@@ -33,10 +37,10 @@
     <tr><th>Filename</th><th>Owner</th><th>Actions</th></tr>
     {% for name, meta in shared.items() %}
     <tr><td>{{ name }}</td><td>{{ meta.owner }}</td>
-      <td><a href="{{ url_for('download', filename=name) }}">Download</a> | <a href="{{ url_for('verify', filename=name) }}">Verify</a></td>
+      <td><a href="{{ url_for('download', filename=name) }}">Download</a> &nbsp;·&nbsp; <a href="{{ url_for('verify', filename=name) }}">Verify</a></td>
     </tr>
     {% endfor %}
   </table>
-  {% else %}<p>No files have been shared with you yet.</p>{% endif %}
+  {% else %}<p style="color:#8D9AB8;">No files have been shared with you yet.</p>{% endif %}
 </div>
 {% endblock %}

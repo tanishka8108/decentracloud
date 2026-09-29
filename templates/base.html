@@ -124,8 +124,8 @@
   </div>
 </nav>
 <div class="container{% block wide %}{% endblock %}">
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}{% for m in messages %}<div class="flash{% if 'denied' in m or 'failed' in m or 'WARNING' in m or 'missing' in m.lower() %} warn{% endif %}">{{ m }}</div>{% endfor %}{% endif %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for category, m in messages %}<div class="flash{% if category == 'error' %} warn{% endif %}">{{ m }}</div>{% endfor %}{% endif %}
   {% endwith %}
   {% block content %}{% endblock %}
 </div>

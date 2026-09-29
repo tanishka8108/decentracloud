@@ -5,5 +5,17 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .env
+.secret_key
+
+# local data (offline dev backend / database / ledger)
 nodes/*
 !nodes/.gitkeep
+*.db
+ledger.json
+ledger.json.tmp
+
+# Google Cloud credentials — NEVER commit these
+service-account*.json
+*service-account*.json
+credentials*.json
+*.pem

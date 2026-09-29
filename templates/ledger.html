@@ -3,7 +3,7 @@
 {% block content %}
 <div class="card">
   <h1>Blockchain Ledger</h1>
-  <p class="lede">Every action — register, upload, share, download — is written as a block that hash-chains to the one before it.</p>
+  <p class="lede">Every action — register, upload, share, download, verify — is written as a block that hash-chains to the one before it. This is a lightweight educational hash-chain ledger (not Bitcoin/Ethereum) that gives a tamper-evident audit trail.</p>
   <p class="{{ 'ok' if valid else 'bad' }}" style="font-size:14px;">{{ '✓ ' if valid else '✕ ' }}{{ msg }}</p>
 
   <div style="display:flex; overflow-x:auto; gap:0; padding: 18px 0 8px;">
@@ -14,6 +14,7 @@
           <div style="font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px; margin-top:6px;">{{ b.action }}</div>
           <div style="font-size:12px; color:#8D9AB8; margin-top:3px;">{{ b.filename if b.filename != '-' else '—' }}</div>
           <div style="font-size:11.5px; color:#8D9AB8; margin-top:2px;">{{ b.user }}</div>
+          <div style="font-size:10.5px; color:#8D9AB8; margin-top:2px;">{{ b.time_str }}</div>
           <div class="hash" style="margin-top:8px;">hash: {{ b.hash[:12] }}…</div>
           <div class="hash">prev: {{ b.previous_hash[:12] if b.previous_hash != '0' else '0000…' }}…</div>
         </div>
@@ -29,15 +30,17 @@
   <hr class="divider">
   <h2 style="font-size:15px;">Full detail</h2>
   <table>
-    <tr><th>#</th><th>Action</th><th>File</th><th>User</th><th>Hash</th><th>Prev Hash</th></tr>
+    <tr><th>Block #</th><th>Timestamp</th><th>Action</th><th>User</th><th>Filename</th><th>File Hash</th><th>Previous Hash</th><th>Block Hash</th></tr>
     {% for b in chain %}
     <tr>
       <td>{{ b.index }}</td>
+      <td style="white-space:nowrap;">{{ b.time_str }}</td>
       <td>{{ b.action }}</td>
-      <td>{{ b.filename }}</td>
       <td>{{ b.user }}</td>
-      <td class="hash">{{ b.hash[:14] }}...</td>
-      <td class="hash">{{ b.previous_hash[:14] }}...</td>
+      <td>{{ b.filename }}</td>
+      <td class="hash" style="max-width:150px;">{{ b.file_hash }}</td>
+      <td class="hash" style="max-width:150px;">{{ b.previous_hash if b.previous_hash != '0' else '0' }}</td>
+      <td class="hash" style="max-width:150px;">{{ b.hash }}</td>
     </tr>
     {% endfor %}
   </table>

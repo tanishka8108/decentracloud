@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card auth-shell">
+  <h1>{{ code }} — {{ title }}</h1>
+  <p class="lede">{{ message }}</p>
+  <p><a href="{{ url_for('home') }}">← Go to the start page</a></p>
+</div>
+{% endblock %}

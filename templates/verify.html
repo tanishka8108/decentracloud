@@ -2,21 +2,53 @@
 {% block content %}
 <div class="card">
   <h1>Integrity Verification</h1>
-  <p class="lede">{{ filename }}</p>
-  <p style="font-size:12.5px; color:#8D9AB8;">Content address (expected SHA-256)</p>
-  <p class="hash" style="margin-top:-6px;">{{ file_hash }}</p>
+  <p class="lede">{{ meta.filename }} — owner <strong>{{ meta.owner }}</strong>, uploaded {{ meta.uploaded_at_str }}</p>
 
-  <table style="margin-top:16px;">
-    <tr><th>Storage Node</th><th>Status</th></tr>
-    {% for node, status in node_status.items() %}
-    <tr><td>{{ node }}</td><td class="{{ 'ok' if status == 'OK' else 'bad' }}">{{ '✓ OK' if status == 'OK' else status }}</td></tr>
+  <p style="font-size:12.5px; color:#8D9AB8; margin-bottom:2px;">Expected SHA-256 (computed at upload)</p>
+  <p class="hash" style="margin-top:-4px;">{{ file_hash }}</p>
+
+  <p style="font-size:12.5px; color:#8D9AB8; margin:12px 0 2px;">SHA-256 recorded in the blockchain ledger</p>
+  <p class="hash" style="margin-top:-4px;">
+    {{ chain_hash or '— not found in ledger —' }}
+    {% if chain_hash and not expected_matches %}<span class="bad">✗ MISMATCH with stored hash</span>{% endif %}
+  </p>
+
+  <table style="margin-top:18px;">
+    <tr><th>Storage Node</th><th>Cloud Bucket</th><th>Status</th><th>Actual SHA-256 of this copy</th></tr>
+    {% for node, st in node_status.items() %}
+    <tr>
+      <td>{{ node }}</td>
+      <td class="hash">{{ st.bucket }}</td>
+      <td class="{{ 'ok' if st.status == 'OK' else 'bad' }}">
+        {% if st.status == 'OK' %}✓ Healthy
+        {% elif st.status == 'TAMPERED' %}✗ Integrity Failed
+        {% elif st.status == 'MISSING' %}✗ Missing
+        {% elif st.status == 'NO_BUCKET' %}✗ Bucket missing
+        {% elif st.status == 'NOT_CONFIGURED' %}✗ Not configured
+        {% else %}✗ Unavailable{% endif %}
+        {% if st.detail %}<div class="muted-note" style="font-weight:400; margin-top:2px;">{{ st.detail }}</div>{% endif %}
+      </td>
+      <td class="hash">{{ st.actual_hash or '—' }}</td>
+    </tr>
     {% endfor %}
   </table>
 
+  <p style="margin-top:16px;" class="{{ 'ok' if healthy == total else 'bad' }}">
+    {{ '✓' if healthy == total else '✗' }} {{ healthy }}/{{ total }} nodes healthy —
+    the application automatically downloads from a healthy copy (automatic failover).
+  </p>
+
   <hr class="divider">
   <h2 style="font-size:15px;">Blockchain Ledger Integrity</h2>
-  <p class="{{ 'ok' if chain_valid else 'bad' }}">{{ '✓ ' if chain_valid else '✕ ' }}{{ msg }}</p>
-  <p class="muted-note">To demo tamper detection: open <code>nodes/node_1/&lt;hash&gt;</code> in a text editor, change a byte, save, and reload this page — that node flips to TAMPERED while the other two still serve the correct file.</p>
-  <p style="margin-top:18px;"><a href="{{ url_for('my_files') }}">← Back to My Files</a></p>
+  <p class="{{ 'ok' if chain_valid else 'bad' }}">{{ '✓ ' if chain_valid else '✕ ' }}{{ chain_msg }}</p>
+
+  <p class="muted-note">
+    <strong>Demo — simulate a corrupted cloud copy:</strong><br>
+    <code>python scripts/corrupt_node.py {{ file_hash }} --node 1</code><br>
+    Reload this page: Node 1 flips to <span class="bad">✗ Integrity Failed</span> while Nodes 2 and 3 stay
+    <span class="ok">✓ Healthy</span> — and the file still downloads from a healthy node.<br>
+    Repair it with: <code>python scripts/restore_node.py {{ file_hash }} --node 1</code>
+  </p>
+  <p style="margin-top:18px;"><a href="{{ url_for('my_files') }}">← Back to Dashboard</a></p>
 </div>
 {% endblock %}

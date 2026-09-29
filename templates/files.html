@@ -2,23 +2,58 @@
 {% block wide %} wide{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>My Files</h1>
-  <p class="lede">Files you've uploaded are hashed and replicated across 3 storage nodes, and logged to the blockchain ledger.</p>
+  <h1>Dashboard</h1>
+  <p class="lede">Logged in as <strong style="color:var(--teal);">{{ owner_name }}</strong>.
+     Every file is content-addressed with SHA-256, replicated across 3 cloud storage nodes,
+     and every action is recorded in the blockchain ledger.</p>
+
+  {% if storage_issues %}
+  <div class="flash warn"><strong>Storage setup needs attention:</strong>
+    <ul style="margin:6px 0 0 18px;">{% for issue in storage_issues %}<li>{{ issue }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  <p class="muted-note" style="margin-top:0;">
+    Storage backend: <span class="pill">{{ storage_backend }}</span>
+    {% for n in storage_nodes %}<span class="pill" title="{{ n.backend }}">{{ n.label }} → {{ n.target }}</span>{% endfor %}
+  </p>
+
+  <h2 style="margin-top:24px;">Files I Own</h2>
   {% if owned %}
   <table>
-    <tr><th>Filename</th><th>Content Hash (address)</th><th>Shared with</th><th>Actions</th></tr>
-    {% for name, meta in owned.items() %}
     <tr>
-      <td>{{ name }}</td>
-      <td class="hash">{{ meta.hash[:20] }}...</td>
+      <th>Filename</th><th>Owner</th><th>SHA-256 Hash</th>
+      <th>Storage Status</th><th>Shared with</th><th>Actions</th>
+    </tr>
+    {% for meta in owned %}
+    <tr>
+      <td>
+        {{ meta.filename }}
+        <div class="muted-note" style="margin-top:2px;">{{ meta.uploaded_at_str }} · {{ meta.size }} bytes</div>
+      </td>
+      <td>{{ meta.owner }}</td>
+      <td class="hash" title="{{ meta.file_hash }}">{{ meta.file_hash[:16] }}…</td>
+      <td>
+        {% for n in storage_nodes %}
+          {% set st = meta.presence.get(n.label) %}
+          <span class="pill" title="{{ n.label }} → {{ st.bucket if st else '?' }}{% if st and st.detail %} — {{ st.detail }}{% endif %}">
+            {{ n.label }} {{ '✓' if st and st.status == 'PRESENT' else '✗' }}
+          </span>
+        {% endfor %}
+        <div class="muted-note" style="margin-top:3px;">
+          {{ meta.present_count }}/{{ storage_nodes|length }} nodes hold this file
+          · <a href="{{ url_for('verify', file_id=meta.id) }}">deep verify</a>
+        </div>
+      </td>
       <td>{% for u in meta.shared_with %}<span class="pill">{{ u }}</span>{% else %}<span style="color:#8D9AB8;">—</span>{% endfor %}</td>
       <td>
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-          <a href="{{ url_for('download', filename=name) }}">Download</a>
-          <a href="{{ url_for('verify', filename=name) }}">Verify</a>
-          <form method="POST" action="{{ url_for('share', filename=name) }}" style="display:flex; gap:6px;">
-            <select name="target_user" style="width:120px; padding:6px 8px;">
-              {% for u in all_users %}{% if u != session.user %}<option value="{{ u }}">{{ u }}</option>{% endif %}{% endfor %}
+          <a href="{{ url_for('download', file_id=meta.id) }}">Download</a>
+          <a href="{{ url_for('verify', file_id=meta.id) }}">Verify</a>
+          <form method="POST" action="{{ url_for('share', file_id=meta.id) }}" style="display:flex; gap:6px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="target_user" style="width:130px; padding:6px 8px;">
+              {% for u in all_users %}{% if u != owner_name %}<option value="{{ u }}">{{ u }}</option>{% endif %}{% endfor %}
             </select>
             <button type="submit" style="padding:6px 12px; font-size:12.5px;">Share</button>
           </form>
@@ -27,20 +62,38 @@
     </tr>
     {% endfor %}
   </table>
-  {% else %}<p style="color:#8D9AB8;">You haven't uploaded any files yet. <a href="{{ url_for('upload') }}">Upload one →</a></p>{% endif %}
+  {% else %}
+  <p style="color:#8D9AB8;">You haven't uploaded any files yet. <a href="{{ url_for('upload') }}">Upload one →</a></p>
+  {% endif %}
 </div>
 
 <div class="card">
   <h2>Shared With Me</h2>
   {% if shared %}
   <table>
-    <tr><th>Filename</th><th>Owner</th><th>Actions</th></tr>
-    {% for name, meta in shared.items() %}
-    <tr><td>{{ name }}</td><td>{{ meta.owner }}</td>
-      <td><a href="{{ url_for('download', filename=name) }}">Download</a> &nbsp;·&nbsp; <a href="{{ url_for('verify', filename=name) }}">Verify</a></td>
+    <tr><th>Filename</th><th>Owner</th><th>SHA-256 Hash</th><th>Storage Status</th><th>Actions</th></tr>
+    {% for meta in shared %}
+    <tr>
+      <td>{{ meta.filename }}</td>
+      <td>{{ meta.owner }}</td>
+      <td class="hash" title="{{ meta.file_hash }}">{{ meta.file_hash[:16] }}…</td>
+      <td>
+        {% for n in storage_nodes %}
+          {% set st = meta.presence.get(n.label) %}
+          <span class="pill" title="{{ n.label }} → {{ st.bucket if st else '?' }}">{{ n.label }} {{ '✓' if st and st.status == 'PRESENT' else '✗' }}</span>
+        {% endfor %}
+        <div class="muted-note" style="margin-top:3px;">{{ meta.present_count }}/{{ storage_nodes|length }} nodes hold this file</div>
+      </td>
+      <td>
+        <a href="{{ url_for('download', file_id=meta.id) }}">Download</a>
+        &nbsp;·&nbsp;
+        <a href="{{ url_for('verify', file_id=meta.id) }}">Verify</a>
+      </td>
     </tr>
     {% endfor %}
   </table>
-  {% else %}<p style="color:#8D9AB8;">No files have been shared with you yet.</p>{% endif %}
+  {% else %}
+  <p style="color:#8D9AB8;">No files have been shared with you yet.</p>
+  {% endif %}
 </div>
 {% endblock %}
